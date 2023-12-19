@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}管理者画面{% endblock %}
+{% block navbar %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item activate">
+        <a class="nav-link" href="{% url 'records' %}">出勤簿</a>
+    </li>
+    <li class="nav-item activate">
+        <a class="nav-link disabled">管理者画面</a>
+    </li>
+</ul>
+<span class="navbar-text">
+    <a href="{% url 'logout' %}">ログアウト</a>
+</span>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<h1>授業員一覧</h1>
+{% if users %}
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">氏名</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td><a href="{% url 'manager_user_detail' user.id %}">{{ user.username }}</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="p-3 mb-2 bg-light text-dark">従業員が登録されていません</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}打刻修正{% endblock %}
+
+{% block navbar %}
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item activate">
+        <a class="nav-link" href="{% url 'records' %}">出勤簿</a>
+    </li>
+    <li class="nav-item activate">
+        <a class="nav-link" href="{% url 'manager' %}">管理者画面</a>
+    </li>
+    <li class="nav-item activate">
+        <a class="nav-link" href="{% url 'manager_user_detail' user.id %}">{{ user_name }}の出勤簿</a>
+    </li>
+    <li class="nav-item activate">
+        <a class="nav-link disabled">打刻修正</a>
+    </li>
+</ul>
+<span class="navbar-text">
+    <a href="{% url 'logout' %}">ログアウト</a>
+</span>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<h1>打刻修正</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">日付</th>
+            <th scope="col">出勤時間</th>
+            <th scope="col">退勤時間</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ attendance.date }}</td>
+            <td>{{ attendance.attendance_at }}</td>
+            {% if attendance.leave_at == 'not_pushed' %}
+            <td>まだ打刻されていません</td>
+            {% else %}
+            <td>{{ attendance.leave_at }}</td>
+            {% endif %}
+        </tr>
+    </tbody>
+</table>
+<form>
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="control-label">日付</label>
+        </div>
+        <div class="col-6">
+            <input class="form-control" type="date" id="push_date" value="{{ attendance.date}}">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="control-label">出勤時刻</label>
+        </div>
+        <div class="col-6">
+            <input class="form-control" type="time" id="push_attendance_time" value="{{ attendance.attendance_at }}">
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="control-label">退勤時刻</label>
+        </div>
+        <div class="col-6">
+            <input class="form-control" type="time" id="push_leave_time" value="{{ attendance.leave_at }}">
+        </div>
+    </div>
+
+    <div class="form-group row justify-content-center">
+        <button type="button" id='submit_request' class="btn btn-success btn-lg col-6">修正</button>
+    </div>
+</form>
+
+<script>
+    $('#submit_request').on('click', function () {
+        var isEmpty = false;
+        // フォームのバリデーション
+        jQuery('#push_date, #push_attendance_time, #push_leave_time').each(function () {
+            if (jQuery(this).val() === '') {
+                alert('未入力の項目があります');
+                $(this).focus();
+                isEmpty = true;
+                return false;
+            }
+        });
+        if (isEmpty) {
+            return false;
+        }
+
+        $.ajax({
+            url: "{% url 'manager_user_attendanceEdit' attendance.id %}",
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                push_date: $('#push_date').val(),
+                push_attendance_time: $('#push_attendance_time').val(),
+                push_leave_time: $('#push_leave_time').val(),
+            },
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    var csrfToken = getCookie("csrftoken");
+                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
+                }
+            },
+        })
+            .done(function (data) {
+                console.log(data);
+                alert('修正しました');
+                window.location.reload();
+            })
+            .fail(function (XMLHttpRequest, textStatus, errorThrown) {
+                console.log(XMLHttpRequest);
+                console.log(textStatus);
+                console.log(errorThrown);
+                alert('問題が発生しました。');
+            });
+    });
+</script>
+{% endblock %}
