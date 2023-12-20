@@ -14,7 +14,7 @@ class ManagerView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return user.is_staff    
  
     def get(self, request, *arg, **kwargs):
-        users = User.objects.all()
+        users = User.objects.filter(is_superuser=False)
         context = {
             'users': users
         }

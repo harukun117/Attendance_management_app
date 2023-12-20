@@ -25,6 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
+SUPERUSER_NAME = os.environ['SUPERUSER_NAME']
+SUPERUSER_EMAIL = os.environ['SUPERUSER_EMAIL']
+SUPERUSER_PASSWORD = os.environ['SUPERUSER_PASSWORD']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
