@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import TemplateView
@@ -48,7 +48,21 @@ class Manager_user_detailView(LoginRequiredMixin, UserPassesTestMixin, TemplateV
             attendance_time__year = search_year,
             attendance_time__month = search_month
         ).order_by('attendance_time')
- 
+        
+        total_work_hours = timedelta()
+        
+        for attendance in month_attendances:
+            attendance_time = attendance.attendance_time
+            leave_time = attendance.leave_time
+            
+            if leave_time and attendance_time:
+                work_duration = leave_time - attendance_time
+                total_work_hours += work_duration
+                
+        total_hours, remainder = divmod(total_work_hours.seconds, 3600)
+        total_minutes, _ = divmod(remainder, 60)
+        total_work_hours_str = f"{total_hours:02}:{total_minutes:02}"
+        
         # context用のデータに整形
         attendances_context = []
         for attendance in month_attendances:
@@ -70,7 +84,8 @@ class Manager_user_detailView(LoginRequiredMixin, UserPassesTestMixin, TemplateV
         context = {
             'attendances': attendances_context,
             'user_name': user.username,  
-            'user_id': user_id
+            'user_id': user_id,
+            'total_work_time': total_work_hours_str
         }
         # Templateにcontextを含めてレスポンスを返す
         return self.render_to_response(context)
