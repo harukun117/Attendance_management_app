@@ -101,6 +101,8 @@ class Manager_user_AttendanceEditView(LoginRequiredMixin, UserPassesTestMixin, T
     def get(self, request, *org, **kwargs):
         attendance_id = self.kwargs.get('attendance_id')
         attendance = get_object_or_404(Attendances, pk=attendance_id)
+        attendance_time = timezone.localtime(attendance.attendance_time)  # ローカルタイムゾーンに変換
+        leave_time = timezone.localtime(attendance.leave_time) if attendance.leave_time else None
         
         leave_time = attendance.leave_time
         if leave_time:
@@ -109,8 +111,8 @@ class Manager_user_AttendanceEditView(LoginRequiredMixin, UserPassesTestMixin, T
             leave_time = 'not_pushed'
         day_attendance = {
                 'id': attendance.id,
-                'date': attendance.attendance_time.strftime('%Y-%m-%d'),
-                'attendance_at': attendance.attendance_time.strftime('%H:%M'),
+                'date': attendance_time.strftime('%Y-%m-%d'),
+                'attendance_at': attendance_time.strftime('%H:%M'),
                 'leave_at': leave_time
             }
         user = get_object_or_404(User, pk=attendance.user_id)
