@@ -104,7 +104,6 @@ class Manager_user_AttendanceEditView(LoginRequiredMixin, UserPassesTestMixin, T
         attendance_time = timezone.localtime(attendance.attendance_time)  # ローカルタイムゾーンに変換
         leave_time = timezone.localtime(attendance.leave_time) if attendance.leave_time else None
         
-        leave_time = attendance.leave_time
         if leave_time:
             leave_time = leave_time.strftime('%H:%M')
         else:
