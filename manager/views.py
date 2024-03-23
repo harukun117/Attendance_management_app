@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 from attendance.models import Attendances
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 
 class ManagerView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'user_list.html'
@@ -30,7 +31,7 @@ class Manager_user_detailView(LoginRequiredMixin, UserPassesTestMixin, TemplateV
     def get(self, request, *org, **kwargs):
         user_id = self.kwargs.get('user_id')
         user = get_object_or_404(User, pk=user_id)
-        today = datetime.today()
+        today = timezone.now()
         
         # リクエストパラメータを受け取る
         search_param = request.GET.get('year_month')
@@ -52,8 +53,8 @@ class Manager_user_detailView(LoginRequiredMixin, UserPassesTestMixin, TemplateV
         total_work_hours = timedelta()
         
         for attendance in month_attendances:
-            attendance_time = attendance.attendance_time
-            leave_time = attendance.leave_time
+            attendance_time = timezone.localtime(attendance.attendance_time)  # ローカルタイムゾーンに変換
+            leave_time = timezone.localtime(attendance.leave_time) if attendance.leave_time else None
             
             if leave_time and attendance_time:
                 work_duration = leave_time - attendance_time
@@ -66,8 +67,8 @@ class Manager_user_detailView(LoginRequiredMixin, UserPassesTestMixin, TemplateV
         # context用のデータに整形
         attendances_context = []
         for attendance in month_attendances:
-            attendance_time = attendance.attendance_time
-            leave_time = attendance.leave_time
+            attendance_time = timezone.localtime(attendance.attendance_time)  # ローカルタイムゾーンに変換
+            leave_time = timezone.localtime(attendance.leave_time) if attendance.leave_time else None
             if leave_time:
                 leave_time = leave_time.strftime('%H:%M')
             else:
