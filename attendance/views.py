@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from .models import Attendances
 from datetime import date, datetime, timedelta
+from django.utils import timezone
 
 class HomeView(LoginRequiredMixin, TemplateView):
     #表示するテンプレート
@@ -60,7 +61,7 @@ class AttendanceRecords(LoginRequiredMixin, TemplateView):
     template_name = 'attend_records.html'
     login_url = '/accounts/login'
     def get(self, request, *args, **kwargs):
-        today = datetime.today()
+        today = timezone.now()
         
         # リクエストパラメータを受け取る
         search_param = request.GET.get('year_month')
@@ -82,8 +83,8 @@ class AttendanceRecords(LoginRequiredMixin, TemplateView):
         total_work_hours = timedelta()
         
         for attendance in month_attendances:
-            attendance_time = attendance.attendance_time
-            leave_time = attendance.leave_time
+            attendance_time = timezone.localtime(attendance.attendance_time)  # ローカルタイムゾーンに変換
+            leave_time = timezone.localtime(attendance.leave_time) if attendance.leave_time else None
             
             if leave_time and attendance_time:
                 work_duration = leave_time - attendance_time
@@ -96,8 +97,8 @@ class AttendanceRecords(LoginRequiredMixin, TemplateView):
         # context用のデータに整形
         attendances_context = []
         for attendance in month_attendances:
-            attendance_time = attendance.attendance_time
-            leave_time = attendance.leave_time
+            attendance_time = timezone.localtime(attendance.attendance_time)  # ローカルタイムゾーンに変換
+            leave_time = timezone.localtime(attendance.leave_time) if attendance.leave_time else None
             if leave_time:
                 leave_time = leave_time.strftime('%H:%M')
             else:
